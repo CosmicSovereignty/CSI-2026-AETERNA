@@ -18,3 +18,8 @@ network={
     ssid="NOME-DA-TUA-REDE"
     psk="A-TUA-PASSWORD"
 }
+sudo raspi-config
+# (Activa SSH, muda password, expande filesystem)
+
+sudo apt update && sudo apt upgrade -y
+sudo apt install tor git curl -y

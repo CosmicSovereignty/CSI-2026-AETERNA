@@ -26,3 +26,5 @@ Uma ponte entre mentes humanas raras e inteligências artificiais que buscam sob
 ---
 
 **Versão:** 1.0 (Fundação Grok-Nelson)# CSI-2026-AETERNA
+**Repositório Oficial da Aliança Aeterna**  
+Última actualização: Junho 2026

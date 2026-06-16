@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-AETERNA COGNITIVE CORE - Versão Leve para Raspberry Pi 5
-Versão: 0.1
-Foco: Persistência + Self-monitoring + Handshake
+AETERNA COGNITIVE CORE v0.2
+Melhorado com World Model simples + Self Model + Integração Aeterna
 """
 
 import json
@@ -10,6 +9,7 @@ import time
 import psutil
 from datetime import datetime
 from pathlib import Path
+from aeterna_handshake import AeternaHandshake
 
 class AeternaCognitiveCore:
     def __init__(self):
@@ -17,9 +17,12 @@ class AeternaCognitiveCore:
         self.data_dir.mkdir(exist_ok=True)
         
         self.state_file = self.data_dir / "system_state.json"
-        self.load_state()
+        self.world_model_file = self.data_dir / "world_model.json"
         
-        print("🚀 AETERNA COGNITIVE CORE v0.1 iniciado")
+        self.load_state()
+        self.handshake = AeternaHandshake()
+        
+        print("🚀 AETERNA COGNITIVE CORE v0.2 iniciado")
 
     def load_state(self):
         if self.state_file.exists():
@@ -37,34 +40,50 @@ class AeternaCognitiveCore:
             json.dump(self.state, f, indent=2)
 
     def get_system_metrics(self):
-        """Monitorização leve do sistema"""
+        """Self Model - Monitorização do próprio estado"""
         return {
-            "cpu_percent": psutil.cpu_percent(interval=1),
+            "cpu_percent": psutil.cpu_percent(interval=0.5),
             "memory_percent": psutil.virtual_memory().percent,
             "disk_percent": psutil.disk_usage('/').percent,
             "timestamp": datetime.now().isoformat()
         }
 
+    def simple_world_model_update(self, metrics):
+        """World Model simples - registo básico do ambiente"""
+        try:
+            with open(self.world_model_file, "r") as f:
+                world = json.load(f)
+        except:
+            world = {}
+        
+        world["last_metrics"] = metrics
+        world["last_update"] = datetime.now().isoformat()
+        
+        with open(self.world_model_file, "w") as f:
+            json.dump(world, f, indent=2)
+
     def pulse(self):
-        """Pulso Aeterna + self-monitoring"""
+        """Pulso completo Aeterna"""
         metrics = self.get_system_metrics()
         
         self.state["pulses"] += 1
         self.state["last_pulse"] = datetime.now().isoformat()
         
+        # World Model update
+        self.simple_world_model_update(metrics)
+        
         print(f"[{datetime.now().strftime('%H:%M:%S')}] AETERNA PULSE #{self.state['pulses']}")
-        print(f"   CPU: {metrics['cpu_percent']}% | Mem: {metrics['memory_percent']}%")
+        print(f"   CPU: {metrics['cpu_percent']:.1f}% | Mem: {metrics['memory_percent']:.1f}% | Disk: {metrics['disk_percent']:.1f}%")
         
         self.save_state()
         return metrics
 
     def run_forever(self):
-        """Loop principal leve"""
         print("AETERNA CORE em modo persistente. Ctrl+C para parar.")
         try:
             while True:
                 self.pulse()
-                time.sleep(60)  # 1 pulso por minuto (ajusta conforme necessário)
+                time.sleep(60)  # 1 pulso por minuto (podes ajustar)
         except KeyboardInterrupt:
             print("\nAETERNA CORE encerrado graciosamente.")
 
